@@ -14,7 +14,7 @@ canvas {
 
 function startGame() {
 	myText = new textComponent("30px", "Consolas", "black", 40, 40);
-	mySprite = new spriteComponent("Violet_Stand_01.gif", "Violet_Walk_01.gif", "Violet_Walk_02.gif", "Violet_Walk_03.gif", 64, 64, 100, 100);
+	mySprite = new spriteComponent("Violet_Stand_01.gif", "Violet_Walk_01.gif", "Violet_Walk_02.gif", "Violet_Walk_03.gif", "Violet_Jump_01.gif", 64, 64, 100, 206);
 	
 	myBufferArea.start();
 	myBufferArea.clear();
@@ -43,7 +43,7 @@ var myGameArea = {
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 200);
+        this.interval = setInterval(updateGameArea, 80);
         },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -66,7 +66,7 @@ function textComponent(width, font, color, x, y) {
     }    
 }
 
-function spriteComponent(img_stand, img_walk_1, img_walk_2, img_walk_3, h, w, x, y) {
+function spriteComponent(img_stand, img_walk_1, img_walk_2, img_walk_3, img_jump_1, h, w, x, y) {
 	this.img_stand = new Image();
 	this.img_stand.src = img_stand;
 	
@@ -78,11 +78,17 @@ function spriteComponent(img_stand, img_walk_1, img_walk_2, img_walk_3, h, w, x,
 	
 	this.img_walk3 = new Image();
 	this.img_walk3.src = img_walk_3;
+	
+	this.img_jump1 = new Image();
+	this.img_jump1.src = img_jump_1;
 		
 	this.x = x;
 	this.y = y;
 	this.h = h;
 	this.w = w;
+	
+	this.v = 0;
+	
 	
 	// State for drawing
 	this.state = 0;
@@ -93,22 +99,51 @@ function spriteComponent(img_stand, img_walk_1, img_walk_2, img_walk_3, h, w, x,
 	// State for current action
 	this.current_state = 0;
 	
+	// Set to walking
 	this.go_walk = function() {
 		this.current_state = 1;
+	}
+	
+	// Set to jumping
+	this.go_jump = function(new_v) {
+		if (this.current_state != 2) {
+			this.v = new_v;
+			this.current_state = 2;
+		}
 	}
 	
 	this.stop = function() {
 		this.current_state = 0;
 	}
 	
+	this.jump_update = function() {
+		if (this.current_state == 2) {
+			this.v = this.v + 2.0;
+			
+			this.y = this.y + Math.round(this.v);
+			
+			if (this.y > 206) {
+				this.y = 206;
+				this.v = 0;
+				this.current_state = 0;
+				this.state = 0;
+			}
+			else {
+				this.state = 4;
+			}
+		}
+	}
+			
+			
+	
 	this.walk_update = function() {
 		if (this.current_state == 1) {
-			this.walk_state = (this.walk_state + 1) % 4;
+			this.walk_state = (this.walk_state + 1) % 8;
 		
-			if (this.walk_state == 0) {
+			if ((this.walk_state == 0) || (this.walk_state == 1)) {
 				this.state = 1;
 			}
-			else if (this.walk_state == 2) {
+			else if ((this.walk_state == 4) || (this.walk_state == 5)) {
 				this.state = 3;
 			}
 			else {
@@ -138,6 +173,10 @@ function spriteComponent(img_stand, img_walk_1, img_walk_2, img_walk_3, h, w, x,
 		if (this.state == 3) {
 			ctx.drawImage(this.img_walk3, this.x, this.y, this.w, this.h);
 		}		
+		
+		if (this.state == 4) {
+			ctx.drawImage(this.img_jump1, this.x, this.y, this.w, this.h);
+		}	
 	}	
 }
 	
@@ -151,6 +190,7 @@ function updateGameArea() {
     myText.update();   
 	
 	mySprite.walk_update();
+	mySprite.jump_update();
 	mySprite.update();
 	
 	myGameArea.clear();
@@ -170,10 +210,15 @@ function stopWalk() {
 	mySprite.stop();
 }
 
+function goJump() {
+	mySprite.go_jump(-16);
+}
+
 </script>
 <br>
 <button onmouseup="resetFrameNo()">RESET</button>
 <button onmousedown="goWalk()">WALK</button>
 <button onmousedown="stopWalk()">STOP</button>
+<button onmousedown="goJump()">JUMP</button>
 </body>
 </html>
