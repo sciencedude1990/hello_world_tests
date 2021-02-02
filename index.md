@@ -7,4 +7,6 @@
 <a href="hello_sprite.html">Hello Sprite</a>
 <hr>
 <a href="minuterie.html">Minuterie</a>
+<hr>
+<a href="hello_long_division.html">Long Division</a>
 
