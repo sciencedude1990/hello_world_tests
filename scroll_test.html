@@ -1,0 +1,128 @@
+<html>
+<head>
+<title>Scroll Test</title>
+</head>
+<body>
+<script>
+
+// State for the play/stop button
+// 0 for stop, 1 for just started playing, 2 for playing
+var state = 0;
+
+// Speed for scrolling
+var speed = 1;
+
+// Variable for tracking scroll position, with fine granularity
+var trackScroll = 0;
+
+// Variable to hold the interval (for periodic update every 80 ms)
+var myinterval = setInterval(updateDisplayArea, 80);
+
+function updateDisplayArea() {
+
+	if (state == 1) {
+		// User just pressed the play button
+		
+		// Set the scroll bar in the textarea to 0
+		var txtArea = document.getElementById("theText");
+		trackScroll = txtArea.scrollTop * 20;
+		
+		// Set the state to 2
+		state = 2;
+	}
+	else if (state == 2) {
+		// Now playing...
+				
+		var txtArea = document.getElementById("theText");
+		var scrollRange = txtArea.scrollHeight - txtArea.offsetHeight;
+		
+		// Only adjust the scroll bar if there is enough text
+		if (scrollRange > 0) {
+			// Increment the variable
+			trackScroll = trackScroll + speed;
+			
+			// Divide by 20 and round
+			var temp = Math.round(trackScroll / 20);
+			
+			// If the value in temp is less than the maximum scroll
+			if (temp <= scrollRange) {
+				txtArea.scrollTop = temp;
+			}
+			else {
+				// Back to stop
+				state = 0;
+			}
+		}
+		else {
+			// Back to stop
+			state = 0;
+		}	
+	}
+	else if (state == 0) {
+		// State is stop, so make sure the button says play
+		var temp = document.getElementById("btnPlay");
+		temp.innerHTML = "Play";
+	}
+	
+	// Update the label to indicate the speed
+	var temp = document.getElementById("btnSpeed");
+	temp.innerHTML = speed;
+
+}
+
+// Copy the text from the source to the teleprompter
+function mrCopy() {
+	var txtArea = document.getElementById("theText");
+	
+	var txtSource = document.getElementById("theSource");
+	
+	txtArea.value = txtSource.value;
+}
+
+// Call to change the state of the play button
+function mrPlay() {
+	if (state == 0) {
+		state = 1;
+		var temp = document.getElementById("btnPlay");
+		temp.innerHTML = "Stop";
+	}
+	else {
+		state = 0;
+		var temp = document.getElementById("btnPlay");
+		temp.innerHTML = "Play";
+	}
+}
+
+// Call to change the speed
+function mrSpeed(dir) {
+		
+	if ((speed + dir) < 0) {
+		speed = 0;
+	}
+	else {
+		speed = speed + dir;
+	}
+	
+	// window.alert("Speed: " + speed);
+}
+	
+</script>
+
+<textarea id="theText" name="theText" rows="16" cols="50" spellcheck="false" style="transform:scaleX(-1); transform:scaleY(-1); background-color:black; color:white; font-size:200%; text-align:center">
+Hi!
+</textarea>
+<br>
+<button id="btnPlay" style="font-size : 20px" onmouseup="mrPlay()">Play</button> 
+<button id="btnSpeedUp" style="font-size : 20px" onmouseup="mrSpeed(+1)"> + </button> 
+<button id="btnSpeedDown" style="font-size : 20px" onmouseup="mrSpeed(-1)"> - </button> 
+<button id="btnSpeed" style="font-size : 20px"> 1 </button>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <button id="btnCopy" style="font-size : 20px" onmouseup="mrCopy()">Copy</button>
+
+<br>
+<textarea id="theSource" name="theSource" rows="16" cols="50" style="font-size:200%">
+Test test
+</textarea>
+<br>
+
+</body>
+</html>
